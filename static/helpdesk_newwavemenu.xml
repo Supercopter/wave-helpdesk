@@ -1,0 +1,12 @@
+<extension
+    name="Wave Helpdesk"
+    thumbnailUrl="http://wave-helpdesk.appspot.com/avatar.png"
+    description="This extension lets you ask Wave-related questions, and get answers from a volunteer team of wave-savvy users."
+    version='2'> 
+  <author name="Nathanael Abbotts"/> 
+<menuHook location="newwavemenu" text="New Helpdesk Question"> 
+  <addParticipants>
+	<participant id="wave-helpdesk@appspot.com"/>
+  </addParticipants>
+</menuHook>
+</extension>

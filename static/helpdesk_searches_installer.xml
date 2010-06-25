@@ -1,0 +1,19 @@
+<extension 
+    name="Wave Helpdesk Searches"
+    thumbnailUrl="http://wave-helpdesk.appspot.com/avatar.png"
+    description="Adds searches for all of the Helpdesk waves."
+    version='1'> 
+
+  <author name="Nathanael Abbotts"/> 
+
+  <savedSearchHook 
+  name='Helpdesk-Official' 
+  query='group:wave-helpdesk-official@googlegroups.com creator:wave-helpdesk@appspot.com'/>
+
+  <savedSearchHook name='Helpdesk-Discussions' 
+  query="group:wave-helpdesk@googlegroups.com creator:wave-helpdesk@appspot.com tag:'discussion'"/> 
+
+  <savedSearchHook 
+  name='Helpdesk-Questions' 
+  query="group:wave-helpdesk@googlegroups.com creator:wave-helpdesk@appspot.com tag:'question''"/> 
+  </extension>

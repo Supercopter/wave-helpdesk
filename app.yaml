@@ -1,0 +1,49 @@
+application: wave-helpdesk
+version: 16
+runtime: python
+api_version: 1
+
+handlers:
+- url: /_wave/.*
+  script: main.py
+
+- url: .*/(.*\.(gif|png|jpg|ico))
+  static_files: static/\1
+  upload: static/(.*\.(gif|png|jpg|ico))
+
+- url: /assets
+  static_dir: assets
+  
+- url: /helpdesk_searches_installer.xml
+  static_files: static/helpdesk_searches_installer.xml
+  upload: static/helpdesk_searches_installer.xml
+  mime_type: text/xml
+
+- url: /helpdesk_newwavemenu.xml
+  static_files: static/helpdesk_newwavemenu.xml
+  upload: static/helpdesk_newwavemenu.xml
+  mime_type: text/xml
+
+- url: .*/(.*search.*\.xml)
+  static_files: static/helpdesk_searches_installer.xml
+  upload: static/helpdesk_searches_installer.xml
+  mime_type: text/xml
+
+- url: .*/(.*\.xml)
+  static_files: static/helpdesk_newwavemenu.xml
+  upload: static/helpdesk_newwavemenu.xml
+  mime_type: text/xml
+
+- url: /localdebug.html
+  static_files: localdebug.html
+  upload: localdebug.html
+  mime_type: text/html
+
+- url: /.*
+  static_files: static/redirect_to_wave.html
+  upload: static/redirect_to_wave.html
+  mime_type: text/html
+
+skip_files:
+- ^main_DEPRECIATED\.py
+- ^localdebug\.html
