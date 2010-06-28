@@ -1,3 +1,6 @@
+# main.py
+
+
 from waveapi import robot
 from waveapi import element
 from waveapi import events
@@ -5,9 +8,14 @@ from waveapi import appengine_robot_runner
 import logging
 from google.appengine.ext import db
 import classes
-ROOT_WAVE = False
-INDEX_WAVE = False
-BUTTON_WAVE = False
+
+# "Placeholders" to stop errors
+ROOT_WAVE = True
+INDEX_WAVE = True
+BUTTON_WAVE = True
+myRobot = True 
+
+# Gets the "Main Waves" from the datastore
 query = db.GqlQuery('SELECT * FROM MainWave')
 for i in query:
   if i.wave_type == 1:
@@ -16,7 +24,8 @@ for i in query:
     INDEX_WAVE = i
   elif i.wave_type == 3:
     BUTTON_WAVE = i
-myRobot = False #Placeholder to stop errors...
+
+# Hard Codes the "helpful panel"
 PARTICIPANTS = ['wave-helpdesk@googlegroups.com',
                 'nat.abbotts@wavewatchers.org',
                 'alexandrojv@wavewatchers.org',
@@ -32,19 +41,22 @@ PARTICIPANTS = ['wave-helpdesk@googlegroups.com',
                 'tjb654@googlewave.com',
                 'rupesh@wavewatchers.org',
                 'public@a.gwave.com',]
+
+
 def create_question_wave(q_wave):
-      q_wave.title = 'New Helpdesk Question'
-      q_wave.root_blip.append(element.Line(line_type = 'h4'))
-      q_wave.root_blip.append('Type a summary of your question in the box below.\n')
-      q_wave.root_blip.append(element.Input('wave-helpdesk:InsertQuestion', ''))
-      q_wave.root_blip.append(element.Line(line_type = 'h4'))
-      q_wave.root_blip.append('If you have more detail to add, add it here:\n')
-      q_wave.root_blip.append(element.TextArea('helpdesk/detail', ''))
-      q_wave.root_blip.append(element.Line(line_type = 'h4'))
-      q_wave.root_blip.append('Once you are done, click this button:\n')
-      q_wave.root_blip.append(element.Button('helpdesk-submitquestion', 'Submit Question'))
-      q_wave.root_blip.append('\n\nNote: You are not currently able to include screenshots/gadgets etc. in the helpdesk, as the helpdesk will delete them. We are working to allow you to use attachments.')
-      return q_wave
+  '''Appends the required '''
+  q_wave.title = 'New Helpdesk Question'
+  q_wave.root_blip.append(element.Line(line_type = 'h4'))
+  q_wave.root_blip.append('Type a summary of your question in the box below.\n')
+  q_wave.root_blip.append(element.Input('wave-helpdesk:InsertQuestion', ''))
+  q_wave.root_blip.append(element.Line(line_type = 'h4'))
+  q_wave.root_blip.append('If you have more detail to add, add it here:\n')
+  q_wave.root_blip.append(element.TextArea('helpdesk/detail', ''))
+  q_wave.root_blip.append(element.Line(line_type = 'h4'))
+  q_wave.root_blip.append('Once you are done, click this button:\n')
+  q_wave.root_blip.append(element.Button('helpdesk-submitquestion', 'Submit Question'))
+  q_wave.root_blip.append('\n\nNote: You are not currently able to include screenshots/gadgets etc. in the helpdesk, as the helpdesk will delete them. We are working to allow you to use attachments.')
+  return q_wave
       
 def OnFormButtonClicked(event, wavelet):
   logging.info('OnFormButtonClicked Called... Button Name %s' % event.button_name)
@@ -282,23 +294,20 @@ def OnWaveletSelfAdded(event, wavelet):
     return
   elif 'all@wavewatchers.org' not in wavelet.participants:
     return
-  if "[{[S3TUP H3LPD3SK]}]" in wavelet.title:
-    wavelet.title = "[ADMIN CONSOLE] - Wave Helpdesk"
-    wavelet.root_blip.append(element.Button('helpdesk-setupindex', "NEW INDEX WAVE"))
-    wavelet.root_blip.append(element.Button('helpdesk-setupmain', "NEW MAIN WAVE"))
-    wavelet.root_blip.append(element.Button('helpdesk-setupbutton', "NEW BUTTON WAVE"))
-  elif '[{[Sp3cialButton]}]' in wavelet.title:
+  if 'Create Admin Console' in wavelet.title:
+    wavelet.title = '[ADMIN CONSOLE] - Wave Helpdesk'
+    wavelet.root_blip.append(element.Button('helpdesk-setupindex', 'NEW INDEX WAVE'))
+    wavelet.root_blip.append(element.Button('helpdesk-setupmain', 'NEW MAIN WAVE'))
+    wavelet.root_blip.append(element.Button('helpdesk-setupbutton', 'NEW BUTTON WAVE'))
+  elif 'Add Testing Button' in wavelet.title:
     wavelet.reply().append(element.Button('helpdesktesting-newquestion', 'New Style Question (Test)'))
     return
-  elif '[{[AddM3Func]}]' in wavelet.title:
+  elif 'Setup \'Add Me\'' in wavelet.title:
     wavelet.title = 'HelpdeskDev - Add yourself to a wave'
     wavelet.root_blip.append(element.Line('h3', None, 'c'))
     wavelet.root_blip.append('Enter the Wave ID of the wave you want to be added to:\n')
     wavelet.root_blip.append(element.Input(name = 'Wave Add'))
     wavelet.root_blip.append('\n\n')
-    wavelet.root_blip.append(element.Button('helpdesk-dev-add_me', 'Add Me'))
-  elif 'HelpdeskDev - Add yourself to a wave' in wavelet.title:
-    wavelet.root_blip.first(element.Button).delete()
     wavelet.root_blip.append(element.Line('h3', None, 'c'))
     wavelet.root_blip.append('Enter the Wavelet ID of the wave you want to be added to:\nIf you are\'t sure, leave blank.')
     wavelet.root_blip.append(element.Input(name = 'Wavelet ID'))
@@ -310,49 +319,52 @@ def OnWaveletSelfAdded(event, wavelet):
     wavelet.root_blip.append(element.Button('helpdesk-dev-add_them', 'Add Them'))
 
 def OnParticipantsChanged(event, wavelet):
-  logging.info("OnParticipantsChanged Called")
+  logging.info('OnParticipantsChanged Called')
   if ('wave-helpdesk@appspot.com' != wavelet.root_blip.creator):
     return
   badAdded = []
   goodRemoved = []
   #q = db.GqlQuery('SELECT * FROM UserWave WHERE wave_id = :1', wavelet.wave_id)
-  repby = []
+  repBy = []
   #if q:
   #  if q.reported_by:
   #    repby = [q.reported_by]
   for p in event.participants_added:
-    if (p.split("@")[1] == "appspot.com") or (p.split("@")[1] == "googlewaverobots.com"):
+    if (p.split('@')[1] == 'appspot.com') or (p.split('@')[1] == 'googlewaverobots.com'):
       badAdded.append(p)
       if p in ['wave-helpdesk@appspot.com', 'statusee@appspot.com',]:
         badAdded.remove(p)
   for p in event.participants_removed:
-    if p in PARTICIPANTS + repby:
+    if p in PARTICIPANTS + repBy:
       goodRemoved.append(p)
-  if event.modified_by in PARTICIPANTS + repby:
+  if event.modified_by in PARTICIPANTS + repBy:
     return
   if not (badAdded or goodRemoved):
     return
   for i in badAdded:
-    wavelet.participants.set_role(i, "READ_ONLY")
+    wavelet.participants.set_role(i, 'READ_ONLY')
     logging.debug('%s now read only' % i)
   for i in goodRemoved:
     wavelet.participants.add(i)
     logging.debug('%s was re-added' % i)
-  wavelet.participants.set_role(event.modified_by, "READ_ONLY")
+  wavelet.participants.set_role(event.modified_by, 'READ_ONLY')
 
 if ROOT_WAVE:
-  prof_url = "https://wave.google.com/wave/waveref/%s/%s" % (ROOT_WAVE.wave_id.split('!')[0], ROOT_WAVE.wave_id.split('!')[1])
+  prof_url = 'https://wave.google.com/wave/waveref/%s/%s' % (ROOT_WAVE.wave_id.split('!')[0], ROOT_WAVE.wave_id.split('!')[1])
 else:
-  prof_url = "http://groups.google.com/group/wave-helpdesk"
-myRobot = robot.Robot(name = "HelpDesk(beta)",
+  prof_url = 'http://groups.google.com/group/wave-helpdesk'
+myRobot = robot.Robot(name = 'HelpDesk(beta)',
                       image_url = 'http://wave-helpdesk.appspot.com/avatar.png',
                       profile_url = prof_url)
-myRobot.register_handler(events.FormButtonClicked, OnFormButtonClicked, context = ["ROOT", "SELF"])
+myRobot.register_handler(events.FormButtonClicked, OnFormButtonClicked, context = ['ROOT', 'SELF'])
 myRobot.register_handler(events.WaveletParticipantsChanged, OnParticipantsChanged, context = 'ROOT')
 myRobot.register_handler(events.WaveletSelfAdded, OnWaveletSelfAdded, context = 'ROOT')
-
-import verify
-myRobot.set_verification_token_info(verify.V_TOKEN, verify.S_TOKEN)
-if (verify.KEY) and (verify.SECRET):
-  myRobot.setup_oauth(verify.KEY, verify.SECRET)
+try:
+  import credentials
+except:
+  import credentials_template
+if credentials.V_TOKEN:
+  myRobot.set_verification_token_info(credentials.V_TOKEN, credentials.S_TOKEN)
+if (credentials.KEY) and (credentials.SECRET):
+  myRobot.setup_oauth(credentials, credentials.SECRET)
 appengine_robot_runner.run(myRobot, debug=True)
