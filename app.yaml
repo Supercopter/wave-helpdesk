@@ -1,5 +1,5 @@
 application: wave-helpdesk
-version: 16
+version: 17
 runtime: python
 api_version: 1
 
@@ -11,8 +11,6 @@ handlers:
   static_files: static/\1
   upload: static/(.*\.(gif|png|jpg|ico))
 
-- url: /assets
-  static_dir: assets
   
 - url: /helpdesk_searches_installer.xml
   static_files: static/helpdesk_searches_installer.xml
