@@ -2,7 +2,7 @@
     name="Wave Helpdesk Searches"
     thumbnailUrl="http://wave-helpdesk.appspot.com/avatar.png"
     description="Adds searches for all of the Helpdesk waves."
-    version='1'> 
+    version='2'> 
 
   <author name="Nathanael Abbotts"/> 
 
@@ -15,5 +15,5 @@
 
   <savedSearchHook 
   name='Helpdesk-Questions' 
-  query="group:wave-helpdesk@googlegroups.com creator:wave-helpdesk@appspot.com tag:'question''"/> 
+  query="group:wave-helpdesk@googlegroups.com with:wave-helpdesk@appspot.com tag:'question''"/> 
   </extension>
