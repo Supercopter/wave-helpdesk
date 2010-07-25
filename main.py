@@ -50,12 +50,7 @@ PARTICIPANTS = ['wave-helpdesk@googlegroups.com',
                 'tjb654@googlewave.com',
                 'rupesh@wavewatchers.org',
                 'public@a.gwave.com',]
-BUGS = {'no-attachments':{'status':True,
-                          'message':'Note: You are not currently able' +
-                          ' to include screenshots/gadgets etc. in' +
-                          ' the helpdesk, as the helpdesk will delete' +
-                          ' them. We are working to allow you to use' +
-                          ' attachments.')}
+
 
 def create_question_wave(q_wave):
   '''Appends the required elements & text to
@@ -74,7 +69,7 @@ def create_question_wave(q_wave):
   # Adds another Heading element
   q_wave.root_blip.append(element.Line(line_type = 'h3'))
   # Adds some more instructions
-  q_wave.root_blip.append('If you have more detail to add, add it here:\n')
+  q_wave.root_blip.append('If you have more detail to add, add it here (optional):\n')
   # Adds a TextArea element, for question detail. TextArea
   # elements expand when more text than fits the box is
   #entered. This behavior does not appear in the Input element.
@@ -86,9 +81,23 @@ def create_question_wave(q_wave):
   # Adds the submit button.
   q_wave.root_blip.append(element.Button('helpdesk-submitquestion',
                                          'Submit Question'))
-  # Adds a warning message, if a particular bug hasn't yet been fixed.
-  if BUGS['no-attachments']['status'] == True:
-    q_wave.root_blip.append('\n\n' + BUGS['no-attachments']['message'])
+  q_wave.root_blip.append('\n\nIf you would like to include screenshots/attachments, go into \'edit\' mode (click the "edit" button on the toolbar), then attach the file/screenshot that you would like to use.\n\n')
+  # Adds a random helpful message.
+  import random
+  x = random.choice((1,2,3))
+  rand_texts = {1:('You might want to check our list of all previous questions: ',
+      'Helpdesk Index',
+      ('link/wave', INDEX_WAVE.wave_id)),
+   2:('Think you make good helpdesk material? Ask to join ',
+      'our group.',
+      ('link/manual', 'http://hgroups.google.com/group/wave-helpdesk')),
+   3:('You can install some searches that will let you find all the helpdesk questions, discussions and main waves ',
+      'here.',
+      ('link/wave', ROOT_WAVE.wave_id)),
+   }
+  q_wave.root_blip.append(rand_texts[x][0])
+  q_wave.root_blip.append(rand_texts[x][1], (rand_texts[x][2]))
+  q_wave.root_blip.append(' ', (('link/wave', None)))
   return q_wave
       
 def OnFormButtonClicked(event, wavelet):
@@ -97,6 +106,8 @@ def OnFormButtonClicked(event, wavelet):
   logging.debug('OnFormButtonClicked Called, Button Name %s' % event.button_name)
   # Assigns the wavelet's operation queue to opQ for easier access.
   opQ = wavelet.get_operation_queue()
+
+  
   # If the button is the 'new question' button:
   if event.button_name == 'helpdesk-newquestion':
     # Logs that the button is the new question button.
@@ -109,6 +120,8 @@ def OnFormButtonClicked(event, wavelet):
     create_question_wave(q_wave)
     # Submits the question wave using the active api.
     myRobot.submit(q_wave)
+
+    
   # If the button is the helpdesktesting button:
   elif event.button_name == 'helpdesktesting-newquestion':
     # Does the same as above, but the 3 steps are combined into one.
@@ -116,6 +129,8 @@ def OnFormButtonClicked(event, wavelet):
                                                          participants = [
                                                            event.modified_by],
                                                          submit=True)))
+
+    
   # if the button is the 'add me' button on the helpdeskdev wave:
   elif event.button_name == 'helpdesk-dev-add_me':
     # Gets the wave_id
@@ -152,6 +167,8 @@ def OnFormButtonClicked(event, wavelet):
     except:
       wavelet.root_blip.append('\nOperation Failed')
   # TODO: Comment from here downwards.
+
+  
   elif event.button_name == 'helpdesk-dev-add_them':
     wave_id_box = event.blip.first(element.Input, name = 'Wave Add')
     if wave_id_box:
@@ -178,6 +195,8 @@ def OnFormButtonClicked(event, wavelet):
       wavelet.get_operation_queue().wavelet_modify_participant_role(wave_id, wavelet_id, who, 'FULL')
     except:
       wavelet.root_blip.append('\nOperation Failed')
+
+      
   elif event.button_name == 'helpdesk-submitquestion':
     logging.debug('New Question Submitted')
     questionline = event.blip.first(element.Input)
@@ -191,20 +210,17 @@ def OnFormButtonClicked(event, wavelet):
       detail = detailbox.value().serialize()['properties']['value']
     else:
       detail = ''
-    #attachments = {}
-    #for e in wavelet.root_blip.elements:
-    #  if isinstance(e, element.Attachment):
-    #    attachments[e.get('caption')] = e.get('data')
-    #logging.debug('No. of attachments: %s' % str(len(attachments)))
+
+    
     if (question == 'Type a simple version of your question here') or (not question) or (question == 'New Helpdesk Question'):
-      wavelet.reply('You need to summarise your question in the question box before submitting.\nIf you are having trouble with the helpdesk, add \'nat.abbotts@wavewatchers.org\' to this wave.')
+      wavelet.root_blip.append('\n\nYou need to summarise your question in the question box before submitting.\nIf you are having trouble with the helpdesk, add \'nat.abbotts@wavewatchers.org\' to this wave.',
+                               [('style/backgroundColor', 'rgb(255, 229, 0)'),
+                                ('style/fontWeight', 'bold')])
       return
-    wavelet.root_blip.range(0, len(wavelet.root_blip.text) - 1).delete()
+    wavelet.root_blip.range(0, len(wavelet.root_blip.text)).delete()
     wavelet.title = question
     wavelet.root_blip.append('\n')
     wavelet.root_blip.append(detail)
-    #for i in attachments.keys():
-    #  wavelet.root_blip.append(element.Attachment(caption = i, data = attachments[i]))
     opQ.wavelet_add_participant(wavelet.wave_id, wavelet.wavelet_id, 'wave-helpdesk@googlegroups.com')
     opQ.wavelet_modify_tag(wavelet.wave_id, wavelet.wavelet_id, 'question')
     d_wave = myRobot.new_wave('googlewave.com',
@@ -214,27 +230,46 @@ def OnFormButtonClicked(event, wavelet):
       opQ.wavelet_add_participant(d_wave.wave_id, d_wave.wavelet_id, i)
     d_wave.title = "[PUBLIC DISCUSSION] " + question
     opQ.wavelet_modify_tag(d_wave.wave_id, d_wave.wavelet_id, 'discussion')
-    d_wave.root_blip.append(wavelet.root_blip.text)
+    wavelet.data_documents['helpdesk-questionasker'] = event.modified_by
+    d_wave.data_documents['helpdesk-questionasker'] = event.modified_by
+    d_wave.root_blip.append('\n\n%s' % detail)
     d_wave.root_blip.append('\n\nOriginal Question Wave', bundled_annotations = [('link/wave', wavelet.wave_id)])
-    #for i in attachments.keys():
-    #  wavelet.root_blip.append(element.Attachment(caption = i, data = attachments[i]))
+    d_wave.root_blip.append('\nIndex of all Questions', bundled_annotations = [('link/wave', INDEX_WAVE.wave_id)])
+    if wavelet.root_blip.elements:
+      import urllib2
+      
+      for e in wavelet.root_blip.elements:
+        if isinstance(e, element.Attachment):
+          new = element.Attachment(caption = e.caption,
+                                   data = urllib2.urlopen(e.attachmentUrl).read())
+          wavelet.root_blip.append('\n')
+          wavelet.root_blip.append(new)
+          d_wave.root_blip.append('\n')
+          d_wave.root_blip.append(new)
     myRobot.submit(d_wave)
-    wavelet.reply('''This wave is public read-only (anyone can see it, but only participants can edit). The Helpdesk Team will choose the best answer 
-from the discussion wave, once the discussion has finished, and post it here.\n''').append('Go to the full access public Discussion Wave', bundled_annotations = [('link/wave', d_wave.wave_id)])
+    temptext = '\n\nThis wave is public read-only (anyone can see it, but '\
+    'only participants can edit). The Helpdesk Team will choose the best answer '\
+    'from the discussion wave, once the discussion has finished, and post it here.\n'
+    temptext2 = 'Go to the \'Full-Access\' Public Discussion Wave\n'
+    wavelet.root_blip.append(temptext, [('style/fontStyle', 'italic')])
+    wavelet.root_blip.append(temptext2, [('link/wave', d_wave.wave_id),
+                                         ('style/fontStyle', 'italic')])
     index = myRobot.fetch_wavelet(INDEX_WAVE.wave_id, INDEX_WAVE.wavelet_id)
-    r = index.reply() ##!
+    r = index.reply()
     r.append(element.Line(alignment = element.Line.ALIGN_CENTER))
     r.append(question + '\n')
     r.append(element.Line(alignment = element.Line.ALIGN_CENTER))
-    r.append('Question Wave', bundled_annotations = [('link/wave', wavelet.wave_id)])
+    r.append('Question Wave', [('link/wave', wavelet.wave_id)])
     r.append(' | ')
-    r.append('Discussion Wave', bundled_annotations = [('link/wave', d_wave.wave_id)])
+    r.first(' | ').clear_annotation('link/wave')
+    r.append('Discussion Wave', [('link/wave', d_wave.wave_id)])
     
     myRobot.submit(index)
-    #myRobot.submit(wavelet)
-    wavelet.reply('Question Submitted to ').append('The Helpdesk', bundled_annotations=[('link/wave', INDEX_WAVE.wave_id)])
-    #myRobot.submit(wavelet)
-    #index.submit_with(d_wave)
+    wavelet.root_blip.append('Question Submitted to the Helpdesk: ',
+                             [('link/wave', None)])
+    wavelet.root_blip.append('Go to the Question Index',
+                             [('link/wave', INDEX_WAVE.wave_id),
+                              ('style/fontStyle', 'italic')])
     rec1 = classes.UserWave(wave_id = d_wave.wave_id,
                             wavelet_id = d_wave.wavelet_id,
                             title = d_wave.title,
@@ -379,23 +414,22 @@ def OnParticipantsChanged(event, wavelet):
   logging.info('OnParticipantsChanged Called')
   if ('wave-helpdesk@appspot.com' != wavelet.root_blip.creator):
     return
+  if 'helpdesk-questionasker' in wavelet.data_documents.keys():
+    if wavelet.data_documents['helpdesk-questionasker'] == event.modified_by:
+      return
+  if wavelet.modified_by in PARTICIPANTS:
+    return
+
   badAdded = []
-  goodRemoved = []
-  #q = db.GqlQuery('SELECT * FROM UserWave WHERE wave_id = :1', wavelet.wave_id)
-  repBy = []
-  #if q:
-  #  if q.reported_by:
-  #    repby = [q.reported_by]
+  goodRemoved = []  
   for p in event.participants_added:
     if (p.split('@')[1] == 'appspot.com') or (p.split('@')[1] == 'googlewaverobots.com'):
       badAdded.append(p)
       if p in ['wave-helpdesk@appspot.com', 'statusee@appspot.com',]:
         badAdded.remove(p)
   for p in event.participants_removed:
-    if p in PARTICIPANTS + repBy:
+    if p in PARTICIPANTS:
       goodRemoved.append(p)
-  if event.modified_by in PARTICIPANTS + repBy:
-    return
   if not (badAdded or goodRemoved):
     return
   for i in badAdded:
@@ -404,7 +438,10 @@ def OnParticipantsChanged(event, wavelet):
   for i in goodRemoved:
     wavelet.participants.add(i)
     logging.debug('%s was re-added' % i)
-  wavelet.participants.set_role(event.modified_by, 'READ_ONLY')
+  if ('helpdesk-warninguser-%s' % event.modified_by) in wavelet.data_documents:
+    wavelet.participants.set_role(event.modified_by, 'READ_ONLY')
+  else:
+    wavelet.data_documents['helpdesk-warninguser-%s' % event.modified_by] = '!'
 
 if ROOT_WAVE:
   prof_url = 'https://wave.google.com/wave/waveref/%s/%s' % (ROOT_WAVE.wave_id.split('!')[0], ROOT_WAVE.wave_id.split('!')[1])
