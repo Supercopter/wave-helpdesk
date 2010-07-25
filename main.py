@@ -90,14 +90,16 @@ def create_question_wave(q_wave):
       ('link/wave', INDEX_WAVE.wave_id)),
    2:('Think you make good helpdesk material? Ask to join ',
       'our group.',
-      ('link/manual', 'http://hgroups.google.com/group/wave-helpdesk')),
+      ('link/manual', 'http://groups.google.com/group/wave-helpdesk')),
    3:('You can install some searches that will let you find all the helpdesk questions, discussions and main waves ',
       'here.',
       ('link/wave', ROOT_WAVE.wave_id)),
    }
-  q_wave.root_blip.append(rand_texts[x][0])
-  q_wave.root_blip.append(rand_texts[x][1], (rand_texts[x][2]))
-  q_wave.root_blip.append(' ', (('link/wave', None)))
+  q_wave.root_blip.append(rand_texts[x][0], [('style/fontStyle', 'italic')])
+  q_wave.root_blip.append(rand_texts[x][1], [rand_texts[x][2],
+                                            ('style/fontStyle', 'italic')])
+  q_wave.root_blip.append(' ', [('link/wave', None),
+                                ('style/fontStyle', None)])
   return q_wave
       
 def OnFormButtonClicked(event, wavelet):
