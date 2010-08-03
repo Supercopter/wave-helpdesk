@@ -100,6 +100,7 @@ def create_question_wave(q_wave):
                                             ('style/fontStyle', 'italic')])
   q_wave.root_blip.append(' ', [('link/wave', None),
                                 ('style/fontStyle', None)])
+  q_wave.data_documents['helpdesk-wavetype'] = 'question'
   return q_wave
       
 def OnFormButtonClicked(event, wavelet):
@@ -248,6 +249,7 @@ def OnFormButtonClicked(event, wavelet):
           wavelet.root_blip.append(new)
           d_wave.root_blip.append('\n')
           d_wave.root_blip.append(new)
+    d_wave.data_documents['helpdesk-wavetype'] = 'discussion'
     myRobot.submit(d_wave)
     temptext = '\n\nThis wave is public read-only (anyone can see it, but '\
     'only participants can edit). The Helpdesk Team will choose the best answer '\
@@ -444,6 +446,15 @@ def OnParticipantsChanged(event, wavelet):
     wavelet.participants.set_role(event.modified_by, 'READ_ONLY')
   else:
     wavelet.data_documents['helpdesk-warninguser-%s' % event.modified_by] = '!'
+
+def onWaveletTagsChanged(event, wavelet):
+  if wavelet.data_documents['helpdesk-questiontype']:
+    wave_type = wavelet.data_documents['helpdesk-questiontype']
+  else:
+    pass
+  pass
+  #TODO Write syncing code here.
+
 
 if ROOT_WAVE:
   prof_url = 'https://wave.google.com/wave/waveref/%s/%s' % (ROOT_WAVE.wave_id.split('!')[0], ROOT_WAVE.wave_id.split('!')[1])
